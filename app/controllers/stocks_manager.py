@@ -57,15 +57,15 @@ class Stocks:
             return 1.0
         
         try:
-            # Formato 
-            forex = f"{from_cur}{to_cur}=X"
-            ticker = yf.Ticker(forex)
-
+            forex_ticker = f"{from_cur}{to_cur}=X"
+            ticker = yf.Ticker(forex_ticker)
+            
+            # Recupera il tasso di cambio
             info = ticker.info
-            rate = ticker.get("regualateMarketPrice")
-
+            rate = info.get('regularMarketPrice')
+            
             if rate is None:
-                print("Tasso di cambio non disponibile")
+                raise ValueError(f"Tasso di cambio non disponibile")
             
             return float(rate)
         except Exception as e:
