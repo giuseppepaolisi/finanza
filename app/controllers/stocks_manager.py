@@ -9,6 +9,7 @@ class Stocks:
         try:
             stock = yf.Ticker(ticker)
             info = stock.info
+            # Alcuni ticker potrebbero non avere 'currentPrice' ma 'regularMarketPrice'
             price = info.get("currentPrice") or info.get("regularMarketPrice")
 
             if price is None:
@@ -31,20 +32,23 @@ class Stocks:
             'currency': currency
         }
 
-    def get_all_stocks(self, sort = 'price'):
-        """Ritorna la lista dei dati, includendo il ticker nel dizionario."""
-        stock_list = []
-        for ticker, data in self.stocks.items():
-            item = data.copy()
-            item['ticker'] = ticker
-            stock_list.append(item)
-
-        if sort == 'price':
-            stock_list.sort(key=lambda x: x['price'])
-        elif sort == 'total':
-            stock_list.sort(key=lambda x: x['price'] * x['quantity'])
+    def get_all_stocks(self, sort='price'):
+        """Ritorna un dizionario dei dati, ordinato per il parametro specificato."""
+        stock_dict = {}
         
-        return stock_list
+        for ticker, data in self.stocks.items():
+            stock_dict[ticker] = data.copy()
+        
+        if sort not in ['price', 'total']:
+            sort = 'price'
+        
+        # Ordina il dizionario in base al criterio
+        if sort == 'price':
+            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: x[1]['price']))
+        elif sort == 'total':
+            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: x[1]['price'] * x[1]['quantity']))
+        
+        return stock_dict
 
     def get_exchange(self, from_cur, to_cur):
         """Recupera il tasso di cambio tra due valute."""
