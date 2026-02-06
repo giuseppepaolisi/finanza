@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
 
-class Stock(BaseModel):
+class StockInput(BaseModel):
     ticker: str
     quantity: int
-    price: float = Field(..., description="prezzo unitario")
-    currency: str = Field(..., description="valuta")
+
+class Stock(StockInput):
+    price: float
+    currency: str
