@@ -1,8 +1,10 @@
 import yfinance as yf
+
 class Stocks:
-    def __init__(self):
+    def __init__(self, storage_strategy):
         # Struttura: { 'AAPL': {'quantity': 10, 'price': 150.0, 'currency': 'USD'}, ... }
-        self.stocks = {}
+        self.storage = storage_strategy
+        self.stocks = self.storage.load()
 
     def get_stock_price(self, ticker):
         """Recupera prezzo attuale e valuta da yfinance."""
@@ -31,6 +33,7 @@ class Stocks:
             'price': price,
             'currency': currency
         }
+        self.storage.save(self.stocks)
 
     def get_all_stocks(self, sort='price'):
         """Ritorna un dizionario dei dati, ordinato per il parametro specificato."""
@@ -85,5 +88,6 @@ class Stocks:
             }
             
         return converted_portfolio
-    
-st = Stocks()
+
+from persistence import JSONStorage
+st = Stocks(storage_strategy=JSONStorage())

@@ -1,10 +1,10 @@
-from controllers.stocks_manager import Stocks
-from models import Stock
+from controllers.stocks_manager import st
+from models import Stock, StockInput
 
-stoks = Stocks()
+st.add_stock(StockInput(ticker="MSFT", quantity=5))
+st.add_stock(StockInput(ticker="GOOG", quantity=1))
+st.add_stock(StockInput(ticker="AAPL", quantity=7))
 
-stoks.add_stok(Stock(ticker="MSFT", quantity=5, price=0.0, currency=""))
-stoks.add_stok(Stock(ticker="GOOG", quantity=1, price=0.0, currency=""))
-stoks.add_stok(Stock(ticker="AAPL", quantity=7, price=0.0, currency=""))
-
-print(stoks.get_all_stocks('price'))
+print(st.get_all_stocks('price'))
+print(st.get_exchange("USD", "EUR"))
+print(st.convert_all_stocks("EUR"))
