@@ -22,3 +22,40 @@ async def convert_st(currency: str):
         return st.convert_all_stocks(currency)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Errore nella conversione")
+    
+@router.delete("/remove/{ticker}")
+async def remove_stock(ticker: str):
+    try:
+        st.remove_stock(ticker)
+        return {"message": f"{ticker} rimosso con successo"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/clear")
+async def clear_portfolio():
+    st.clear_portfolio()
+    return {"message": "Portafoglio svuotato con successo"}
+
+@router.put("/update")
+async def update_stock(stock: StockInput):
+    try:
+        st.update_stock(stock)
+        return {"message": f"{stock.ticker} aggiornato con successo", "data": st.stocks[stock.ticker]}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.get("/{ticker}")
+async def get_stock(ticker: str):
+    try:
+        return st.get_stock(ticker)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+# Ritorna i prezzi storici di un'azione
+@router.get("/history/{ticker}")
+async def get_history(ticker: str, period: str = "1mo"):
+    try:
+        # Ritorna un JSON con la lista dei prezzi storici per l'azione specificata
+        return st.get_old_prices(ticker, period)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

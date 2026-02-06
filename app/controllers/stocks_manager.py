@@ -2,7 +2,7 @@ import yfinance as yf
 
 class Stocks:
     def __init__(self, storage_strategy):
-        # Struttura: { 'AAPL': {'quantity': 10, 'price': 150.0, 'currency': 'USD'}, ... }
+        # Struttura: { 'AAPL': {'quantity': 10, 'currency': 'USD'} ... }
         self.storage = storage_strategy
         self.stocks = self.storage.load()
 
@@ -26,13 +26,17 @@ class Stocks:
         """
         Aggiunge o aggiorna un'azione nel dizionario annidato.
         """
-        price, currency = self.get_stock_price(stock.ticker)
+        # Controlla se l'azione esiste già, se sì aggiorna la quantità, altrimenti aggiungi una nuova azione
+        if stock.ticker in self.stocks:
+            self.stocks[stock.ticker]['quantity'] = stock.quantity
+        else:
+            price, currency = self.get_stock_price(stock.ticker)
 
-        self.stocks[stock.ticker] = {
-            'quantity': stock.quantity,
-            'price': price,
-            'currency': currency
-        }
+            self.stocks[stock.ticker] = {
+                'quantity': stock.quantity,
+                #'price': price,
+                'currency': currency
+            }
         self.storage.save(self.stocks)
 
     def get_all_stocks(self, sort='price'):
@@ -47,9 +51,9 @@ class Stocks:
         
         # Ordina il dizionario in base al criterio
         if sort == 'price':
-            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: x[1]['price']))
+            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: self.get_stock_price(x[0])[0], reverse=True))
         elif sort == 'total':
-            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: x[1]['price'] * x[1]['quantity']))
+            stock_dict = dict(sorted(stock_dict.items(), key=lambda x: self.get_stock_price(x[0])[0] * x[1]['quantity'], reverse=True))
         
         return stock_dict
 
@@ -83,11 +87,78 @@ class Stocks:
             
             converted_portfolio[ticker] = {
                 'quantity': data['quantity'],
-                'price': data['price'] * rate,
+                'price': self.get_stock_price(ticker)[0] * rate,
                 'currency': to_cur
             }
             
         return converted_portfolio
+    
+    def remove_stock(self, ticker):
+        """Rimuove un'azione dal portafoglio."""
+        if ticker in self.stocks:
+            del self.stocks[ticker]
+            self.storage.save(self.stocks)
+        else:
+            raise ValueError(f"{ticker} non presente nel portafoglio")
+        
+    def clear_portfolio(self):
+        """Svuota completamente il portafoglio."""
+        self.stocks = {}
+        self.storage.save(self.stocks)
+        
+    def update_stock(self, stock):
+        """Aggiorna la quantità di un'azione esistente."""
+        if stock.ticker in self.stocks:
+            price, currency = self.get_stock_price(stock.ticker)
+            self.stocks[stock.ticker] = {
+                'quantity': stock.quantity,
+                'currency': currency
+            }
+            self.storage.save(self.stocks)
+        else:
+            raise ValueError(f"{stock.ticker} non presente nel portafoglio")
+        
+    def get_stock(self, ticker):
+        """Ritorna i dettagli di un'azione specifica."""
+        if ticker in self.stocks:
+            data = self.stocks[ticker]
+            price, currency = self.get_stock_price(ticker)
+            return {
+                'quantity': data['quantity'],
+                'price': price,
+                'currency': currency
+            }
+        else:
+            raise ValueError(f"{ticker} non presente nel portafoglio")
+        
+    def get_portfolio_value(self, to_cur='USD'):
+        """Calcola il valore totale del portafoglio in una valuta specifica."""
+        total_value = 0.0
+        
+        for ticker, data in self.stocks.items():
+            price, currency = self.get_stock_price(ticker)
+            rate = self.get_exchange(currency, to_cur)
+            total_value += price * data['quantity'] * rate
+            
+        return total_value
+    
+    def get_old_prices(self, ticker, period="1mo"):
+        """Ritorna una lista di oggetti {date, price} per il grafico."""
+        try:
+            stock = yf.Ticker(ticker)
+            hist = stock.history(period=period)
+            
+            # Creiamo una lista di dizionari (formato ideale per Recharts/Chart.js)
+            chart_data = []
+            for date, row in hist.iterrows():
+                chart_data.append({
+                    # Formattiamo la data in YYYY-MM-DD per il frontend
+                    "date": date.strftime('%Y-%m-%d'),
+                    "price": round(float(row['Close']), 2)
+                })
+            return chart_data
+        except Exception as e:
+            raise ValueError(f"Errore nel recupero dati storici per {ticker}: {e}")
 
 from persistence import JSONStorage
 st = Stocks(storage_strategy=JSONStorage())
