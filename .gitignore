@@ -23,6 +23,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.env
+.venv
+env/
+ENV/
+venv/
 
 # Node/Frontend
 node_modules/
