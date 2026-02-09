@@ -5,7 +5,15 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 load_dotenv()
 
-DATABASE_URL = f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME")
+print(f"DEBUG: Password: '{DB_PASSWORD}' - Lunghezza: {len(DB_PASSWORD) if DB_PASSWORD else 0}")
+
+# Costruzione URL
+DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL)
 # factory per creare nuove sessioni di connessione al database 
@@ -17,3 +25,11 @@ class Base(DeclarativeBase):
 def init_db():
     # Chiamato una volta all'avvio dell'app
     Base.metadata.create_all(bind=engine)
+    
+def get_db():
+    # Dipendenza per ottenere una sessione di database per ogni richiesta
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

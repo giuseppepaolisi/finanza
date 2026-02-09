@@ -1,7 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.stock_routes import router as stocks_router
+from routes.portfolio_routes import router as portfolio_router
+from models.database import init_db
+
+init_db()  # Inizializza il database all'avvio dell'app
 
 app = FastAPI(title="Stock Portfolio API")
 
@@ -20,7 +23,7 @@ app.add_middleware(
 )
 
 # Registrazione dei router
-app.include_router(stocks_router)
+app.include_router(portfolio_router)
 
 @app.get("/")
 async def root():
