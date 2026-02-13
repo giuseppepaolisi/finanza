@@ -82,9 +82,10 @@ class PortfolioService:
                 "last_update": asset.update_date,
                 "purchase_date": min(t.purchase_date for t in asset.transactions) if asset.transactions else None # la prima data di acquisto tra le transazioni per questo asset
             })
-        
-        db.commit() # salva gli aggiornamenti dei prezzi
-        
+            
+        # Aggiorna con i nuovi prezzi
+        AssetsRepository.update_asset_price(db, asset.id, asset.current_value, asset.update_date)
+                
         if not sort_by in ["price", "market_value", "total_quantity"]:
             sort_by = "price"
         
@@ -94,6 +95,41 @@ class PortfolioService:
             portfolio_summary.sort(key=lambda x: x['market_value'], reverse=(sort_order == "desc"))
             
         return {"assets": portfolio_summary}
+    
+    def get_total_portfolio_value(db: Session, currency: str = "USD"):
+        """ Calcola il valore totale in base alla currency
+
+        Args:
+            db (Session): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        assets = AssetsRepository.get_all_assets(db)
+        total_value = 0.0
+
+        for asset in assets:
+            # Aggiorna il prezzo live tramite il Service
+            service = get_stock_service()
+            stock_service = service.get_ticker_data(asset.symbol)
+            asset.current_value = stock_service['current_value']
+            asset.update_date = stock_service['update_date']
+            
+            # Calcola la somma delle quantità di tutte le transazioni per questo asset
+            total_quantity = sum(t.quantity for t in asset.transactions)
+            
+            # Calcola il valore totale attuale dell'investimento
+            market_value = float(total_quantity) * asset.current_value
+            
+            # Converti in USD se necessario
+            if asset.currency != currency:
+                exchange_rate = service.get_exchange_rate(asset.currency, currency)
+                market_value *= exchange_rate
+            
+            total_value += market_value
+        
+        return round(total_value, 2)
+        
     
     # Ritorna il prezzo medio di carico di ogni asset
     @staticmethod

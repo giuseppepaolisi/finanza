@@ -33,3 +33,13 @@ class AssetsRepository:
     @staticmethod
     def get_assets_with_transactions(db: Session):
         return db.query(Asset).options(joinedload(Asset.transactions)).all()
+    
+    @staticmethod
+    def update_asset_price(db: Session, asset_id: int, new_price: float, update_date):
+        asset = db.query(Asset).filter(Asset.id == asset_id).first()
+        if asset:
+            asset.current_value = new_price
+            asset.update_date = update_date
+            db.commit()
+            db.refresh(asset)
+        return asset

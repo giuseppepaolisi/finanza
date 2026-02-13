@@ -36,3 +36,7 @@ def get_average_prices(db: Session = Depends(get_db)):
 @router.get("/transaction/{symbol}")
 def get_transactions_by_symbol(symbol: str, db: Session = Depends(get_db)):
     return PortfolioService.get_transactions_by_symbol(db, symbol)
+
+@router.get("/value/{currency}")
+def get_total_portfolio_value(currency: str, db: Session = Depends(get_db)):
+    return PortfolioService.get_total_portfolio_value(db, currency=currency)
