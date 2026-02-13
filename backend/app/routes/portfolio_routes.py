@@ -16,6 +16,7 @@ class TransactionSchema(BaseModel):
 class InvestmentSchema(BaseModel):
     symbol: str
     transaction: TransactionSchema
+# Dependency per ottenere il database serve per ogni endpoint che ne ha bisogno
 
 @router.post("/add")
 def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
@@ -24,6 +25,14 @@ def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
     
     return PortfolioController.add_transaction(db, asset_data, trans_data)
 
-@router.get("/status")
-def view_portfolio(db: Session = Depends(get_db)):
-    return PortfolioController.get_portfolio_status(db)
+@router.get("/status/{sort_by}/{sort_order}")
+def view_portfolio(sort_by: str, sort_order: str, db: Session = Depends(get_db)):
+    return PortfolioController.get_portfolio_status(db, sort_by=sort_by, sort_order=sort_order)
+
+@router.get("/means_price")
+def get_average_prices(db: Session = Depends(get_db)):
+    return PortfolioController.get_average_price(db)
+
+@router.get("/transaction/{symbol}")
+def get_transactions_by_symbol(symbol: str, db: Session = Depends(get_db)):
+    return PortfolioController.get_transactions_by_symbol(db, symbol)

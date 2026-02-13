@@ -13,6 +13,12 @@ class PortfolioController:
         # Recupera dati live per il nuovo asset
         service = get_stock_service()
         market_data = service.get_ticker_data(asset_in['symbol'])
+        # Check se esiste l'asset
+        if market_data is None or market_data.get('current_value') is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'."
+            )
         
         if not db_asset:
             
@@ -46,7 +52,7 @@ class PortfolioController:
         return db_asset
 
     @staticmethod
-    def get_portfolio_status(db: Session):
+    def get_portfolio_status(db: Session, sort_by: str = "price", sort_order: str = "asc"):
         # Recupera tutti gli asset con le relative transazioni caricate
         assets = db.query(Asset).all()
         portfolio_summary = []
@@ -79,4 +85,34 @@ class PortfolioController:
         
         db.commit() # salva gli aggiornamenti dei prezzi
         
+        if not sort_by in ["price", "market_value", "total_quantity"]:
+            sort_by = "price"
+        
+        if sort_by == "price":
+            portfolio_summary.sort(key=lambda x: x['current_price'], reverse=(sort_order == "desc"))
+        elif sort_by == "market_value":
+            portfolio_summary.sort(key=lambda x: x['market_value'], reverse=(sort_order == "desc"))
+            
         return {"assets": portfolio_summary}
+    
+    # Ritorna il prezzo medio di carico di ogni asset
+    @staticmethod
+    def get_average_price(db: Session):
+        assets = db.query(Asset).all()
+        average_prices = {}
+
+        for asset in assets:
+            total_quantity = sum(t.quantity for t in asset.transactions)
+            total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
+            average_price = total_cost / total_quantity if total_quantity > 0 else 0
+            average_prices[asset.symbol] = round(average_price, 2)
+
+        return average_prices
+    
+    @staticmethod
+    def get_transactions_by_symbol(db: Session, symbol: str):
+        asset = db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
+        if not asset:
+            raise HTTPException(status_code=404, detail="Asset not found")
+        transactions = db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
+        return transactions
