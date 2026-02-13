@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from models.database import get_db
-from services.portfolio_controller import PortfolioController
+from services.portfolio_service import PortfolioService
 from pydantic import BaseModel
 from datetime import date
 
@@ -23,16 +23,16 @@ def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
     asset_data = {"symbol": data.symbol}
     trans_data = data.transaction.model_dump()
     
-    return PortfolioController.add_transaction(db, asset_data, trans_data)
+    return PortfolioService.add_transaction(db, asset_data, trans_data)
 
 @router.get("/status/{sort_by}/{sort_order}")
 def view_portfolio(sort_by: str, sort_order: str, db: Session = Depends(get_db)):
-    return PortfolioController.get_portfolio_status(db, sort_by=sort_by, sort_order=sort_order)
+    return PortfolioService.get_portfolio_status(db, sort_by=sort_by, sort_order=sort_order)
 
 @router.get("/means_price")
 def get_average_prices(db: Session = Depends(get_db)):
-    return PortfolioController.get_average_price(db)
+    return PortfolioService.get_average_price(db)
 
 @router.get("/transaction/{symbol}")
 def get_transactions_by_symbol(symbol: str, db: Session = Depends(get_db)):
-    return PortfolioController.get_transactions_by_symbol(db, symbol)
+    return PortfolioService.get_transactions_by_symbol(db, symbol)

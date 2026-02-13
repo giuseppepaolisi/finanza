@@ -4,7 +4,7 @@ from clients.stock_service import get_stock_service
 from datetime import date
 from fastapi import HTTPException
 
-class PortfolioController:
+class PortfolioService:
     @staticmethod
     def add_transaction(db: Session, asset_in: dict, trans_in: dict):
         # Controlla se l'asset esiste già

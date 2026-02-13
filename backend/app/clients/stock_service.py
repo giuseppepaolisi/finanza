@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 import yfinance as yf
 from datetime import date
 
-class StockService(ABC):
+class StockClient(ABC):
     @staticmethod
     @abstractmethod
     def get_ticker_data(symbol: str):
         pass
 
-class StockYFinanceService(StockService):
+class StockYFinanceClient(StockClient):
     @staticmethod
     def get_ticker_data(symbol: str):
         try:
@@ -33,6 +33,6 @@ class StockYFinanceService(StockService):
             return None
 
 # Factory per selezionare il service
-def get_stock_service() -> StockService:
+def get_stock_service() -> StockClient:
     """Factory per ottenere il servizio stock attivo"""
-    return StockYFinanceService
+    return StockYFinanceClient
