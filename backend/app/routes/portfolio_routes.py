@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from models.database import get_db
-from controllers.portfolio_controller import PortfolioController
+from services.portfolio_controller import PortfolioController
 from pydantic import BaseModel
 from datetime import date
 

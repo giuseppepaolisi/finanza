@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models.models import Asset, Transaction
-from services.stock_service import get_stock_service
+from clients.stock_service import get_stock_service
 from datetime import date
 from fastapi import HTTPException
 
