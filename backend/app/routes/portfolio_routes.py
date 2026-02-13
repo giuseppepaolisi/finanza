@@ -8,21 +8,17 @@ from datetime import date
 router = APIRouter(prefix="/portfolio", tags=["Portfolio"])
 
 # Schemi Pydantic per input
-class TransactionSchema(BaseModel):
-    quantity: float
-    #purchase_price: float
-    #purchase_date: date
 
 class InvestmentSchema(BaseModel):
     symbol: str
-    transaction: TransactionSchema
+    quantity: float
 # Dependency per ottenere il database serve per ogni endpoint che ne ha bisogno
 
 # Permette di acquiistre un nuovo asset
 @router.post("/add")
 def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
     asset_data = {"symbol": data.symbol}
-    trans_data = data.transaction.model_dump()
+    trans_data = {"quantity": data.quantity}
     
     return PortfolioService.add_transaction(db, asset_data, trans_data)
 
