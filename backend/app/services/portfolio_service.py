@@ -3,13 +3,14 @@ from models.models import Asset, Transaction
 from clients.stock_service import get_stock_service
 from datetime import date
 from fastapi import HTTPException
+from repository.assets_repository import AssetsRepository
 
 class PortfolioService:
     @staticmethod
     def add_transaction(db: Session, asset_in: dict, trans_in: dict):
         # Controlla se l'asset esiste già
-        db_asset = db.query(Asset).filter(Asset.symbol == asset_in['symbol'].upper()).first()
-        
+        db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
+                
         # Recupera dati live per il nuovo asset
         service = get_stock_service()
         market_data = service.get_ticker_data(asset_in['symbol'])
@@ -36,8 +37,7 @@ class PortfolioService:
                 current_value=market_data['current_value'],
                 update_date=market_data['update_date']
             )
-            db.add(db_asset)
-            db.flush()
+            AssetsRepository.add_asset(db, db_asset)
 
         # Crea sempre la transazione
         new_trans = Transaction(
@@ -54,7 +54,7 @@ class PortfolioService:
     @staticmethod
     def get_portfolio_status(db: Session, sort_by: str = "price", sort_order: str = "asc"):
         # Recupera tutti gli asset con le relative transazioni caricate
-        assets = db.query(Asset).all()
+        assets = AssetsRepository.get_all_assets(db)
         portfolio_summary = []
 
         for asset in assets:
@@ -98,7 +98,7 @@ class PortfolioService:
     # Ritorna il prezzo medio di carico di ogni asset
     @staticmethod
     def get_average_price(db: Session):
-        assets = db.query(Asset).all()
+        assets = AssetsRepository.get_assets_with_transactions(db)
         average_prices = {}
 
         for asset in assets:
@@ -111,7 +111,8 @@ class PortfolioService:
     
     @staticmethod
     def get_transactions_by_symbol(db: Session, symbol: str):
-        asset = db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
+        # db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
+        asset = AssetsRepository.get_asset_by_symbol(db, symbol)
         if not asset:
             raise HTTPException(status_code=404, detail="Asset not found")
         transactions = db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
