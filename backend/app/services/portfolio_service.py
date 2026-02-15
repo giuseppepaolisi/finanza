@@ -76,7 +76,7 @@ class PortfolioService:
             portfolio_summary.append({
                 "symbol": asset.symbol,
                 "name": asset.name,
-                "current_price": asset.current_value,
+                "current_price": round(asset.current_value, 2),
                 "total_quantity": total_quantity,
                 "market_value": round(market_value, 2),
                 "currency": asset.currency,
