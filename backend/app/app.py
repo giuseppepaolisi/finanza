@@ -4,8 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.portfolio_routes import router as portfolio_router
 from models.database import init_db
 
-init_db()  # Inizializza il database all'avvio dell'app
-
 app = FastAPI(title="Stock Portfolio API")
 
 # Configurazione CORS
@@ -24,6 +22,9 @@ app.add_middleware(
 
 # Registrazione dei router
 app.include_router(portfolio_router)
+
+# Evento di startup per inizializzare il database
+app .add_event_handler("startup", init_db)
 
 @app.get("/")
 async def root():
