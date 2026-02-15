@@ -129,7 +129,7 @@ class PortfolioService:
             
             total_value += market_value
         
-        return round(total_value, 2)
+        return {"total_value": round(total_value, 2), "currency": currency}
         
     
     # Ritorna il prezzo medio di carico di ogni asset

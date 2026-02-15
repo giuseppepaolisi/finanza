@@ -1,4 +1,4 @@
-from models import Transaction
+from models.models import Transaction
 from sqlalchemy.orm import Session
 
 class TransactionsRepository:

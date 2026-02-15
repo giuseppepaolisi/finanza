@@ -1,4 +1,4 @@
-from models import Asset, Transaction
+from models.models import Asset, Transaction
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import joinedload
 
