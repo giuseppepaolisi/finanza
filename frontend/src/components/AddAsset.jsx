@@ -5,19 +5,18 @@ const AddAsset = ({loadPortfolioData}) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (symbol && quantity > 0) {
-        portfolioApi.add_asset(symbol, quantity)
-            .then(() => {
-                setSymbol("");
-                setQuantity(1);
-                loadPortfolioData();
-                                
-            })
-            .catch(error => {
-                console.error("Error adding asset:", error);
-            });
+        try {
+            const data = await portfolioApi.add_asset(symbol, quantity);
+            console.log("Asset added:", data);
+            setSymbol("");
+            setQuantity(1);
+            loadPortfolioData();
+        } catch (error) {
+            console.error("Error adding asset:", error);
+        }
     }
   };
 
