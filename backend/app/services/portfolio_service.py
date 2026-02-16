@@ -1,34 +1,32 @@
 from sqlalchemy.orm import Session
 from models.models import Asset, Transaction
-from clients.stock_service import get_stock_service
+from clients.stock_client import get_stock_client
 from datetime import date
-from fastapi import HTTPException
 from repository.assets_repository import AssetsRepository
 from repository.transaction_repository import TransactionsRepository
+from core.logger import setup_logger
+from core.exceptions import PortfolioException
+
+logger = setup_logger(__name__)
 
 class PortfolioService:
     @staticmethod
-    def add_transaction(db: Session, asset_in: dict, trans_in: dict):
+    def add_transaction(db: Session, asset_in: dict, trans_in: dict):   
+        # Recupera dati live per il nuovo asset
+        client = get_stock_client()
+        market_data = client.get_ticker_data(asset_in['symbol'])
+        # Check se esiste l'asset
+        if market_data is None:
+            logger.error(f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'.")
+            raise PortfolioException(
+                message=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'",
+                status_code=400
+            )
+            
         # Controlla se l'asset esiste già
         db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
-                
-        # Recupera dati live per il nuovo asset
-        service = get_stock_service()
-        market_data = service.get_ticker_data(asset_in['symbol'])
-        # Check se esiste l'asset
-        if market_data is None or market_data.get('current_value') is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'."
-            )
-        
         if not db_asset:
-            
-            if market_data is None or market_data.get('current_value') is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'. Verifica che sia corretto (es. AAPL, MSFT, GOOGL)."
-                )
+            logger.info(f"Creazione nuovo asset per simbolo '{asset_in['symbol']}'")
             
             db_asset = Asset(
                 symbol=asset_in['symbol'].upper(),
@@ -47,9 +45,8 @@ class PortfolioService:
             purchase_price=market_data['current_value'], # Usa il prezzo attuale come prezzo di acquisto
             purchase_date=market_data['update_date'] # Usa la data dell'ultimo aggiornamento come data di acquisto
         )
-        db.add(new_trans)
-        db.commit()
-        db.refresh(db_asset)
+        logger.info(f"Aggiunta transazione: {new_trans.quantity} unità di '{db_asset.symbol}' a {round(new_trans.purchase_price, 2)} {db_asset.currency} ciascuna.")
+        TransactionsRepository.create_transaction(db, new_trans)
         return db_asset
 
     @staticmethod
@@ -60,8 +57,8 @@ class PortfolioService:
 
         for asset in assets:
             # Aggiorna il prezzo live tramite il Service
-            service = get_stock_service()
-            stock_service = service.get_ticker_data(asset.symbol)
+            client = get_stock_client()
+            stock_service = client.get_ticker_data(asset.symbol)
             asset.current_value = stock_service['current_value']
             asset.update_date = stock_service['update_date']
             
@@ -71,16 +68,25 @@ class PortfolioService:
             
             # Calcola il valore totale attuale dell'investimento
             market_value = float(total_quantity) * asset.current_value
+            
+            # Profit and Loss
+            total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
+            profit_loss = market_value - total_cost
+            
+            # calcolo prezzo medio di carico
+            average_price = total_cost / total_quantity if total_quantity > 0 else 0
 
             # Costruiamo un dizionario di risposta arricchito
             portfolio_summary.append({
                 "symbol": asset.symbol,
                 "name": asset.name,
-                "current_price": asset.current_value,
+                "current_price": round(asset.current_value, 2),
                 "total_quantity": total_quantity,
                 "market_value": round(market_value, 2),
                 "currency": asset.currency,
                 "last_update": asset.update_date,
+                "profit_loss": round(profit_loss, 2),
+                "average_price": round(average_price, 2),
                 "purchase_date": min(t.purchase_date for t in asset.transactions) if asset.transactions else None # la prima data di acquisto tra le transazioni per questo asset
             })
             
@@ -94,6 +100,8 @@ class PortfolioService:
             portfolio_summary.sort(key=lambda x: x['current_price'], reverse=(sort_order == "desc"))
         elif sort_by == "market_value":
             portfolio_summary.sort(key=lambda x: x['market_value'], reverse=(sort_order == "desc"))
+        elif sort_by == "total_quantity":
+            portfolio_summary.sort(key=lambda x: x['total_quantity'], reverse=(sort_order == "desc"))
             
         return {"assets": portfolio_summary}
     
@@ -111,8 +119,8 @@ class PortfolioService:
 
         for asset in assets:
             # Aggiorna il prezzo live tramite il Service
-            service = get_stock_service()
-            stock_service = service.get_ticker_data(asset.symbol)
+            client = get_stock_client()
+            stock_service = client.get_ticker_data(asset.symbol)
             asset.current_value = stock_service['current_value']
             asset.update_date = stock_service['update_date']
             
@@ -124,62 +132,23 @@ class PortfolioService:
             
             # Converti in USD se necessario
             if asset.currency != currency:
-                exchange_rate = service.get_exchange_rate(asset.currency, currency)
+                exchange_rate = client.get_exchange_rate(asset.currency, currency)
                 market_value *= exchange_rate
             
             total_value += market_value
         
-        return round(total_value, 2)
-        
-    
-    # Ritorna il prezzo medio di carico di ogni asset
-    @staticmethod
-    def get_average_price(db: Session):
-        assets = AssetsRepository.get_assets_with_transactions(db)
-        average_prices = {}
-
-        for asset in assets:
-            total_quantity = sum(t.quantity for t in asset.transactions)
-            total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
-            average_price = total_cost / total_quantity if total_quantity > 0 else 0
-            average_prices[asset.symbol] = round(average_price, 2)
-
-        return average_prices
+        return {"total_value": round(total_value, 2), "currency": currency}
     
     @staticmethod
     def get_transactions_by_symbol(db: Session, symbol: str):
         # db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
         asset = AssetsRepository.get_asset_by_symbol(db, symbol)
         if not asset:
-            raise HTTPException(status_code=404, detail="Asset not found")
+            logger.warning(f"Asset con simbolo '{symbol}' non trovato.")    
+            raise PortfolioException(
+                message=f"Asset con simbolo '{symbol}' non trovato.",
+                status_code=404
+            )
         transactions = db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
+        logger.info(f"Recuperate {len(transactions)} transazioni per l'asset '{symbol}'")
         return transactions
-    
-    @staticmethod
-    def profit_and_loss(db: Session, symbol: str):
-        asset = AssetsRepository.get_asset_by_symbol(db, symbol)
-        if not asset:
-            raise HTTPException(status_code=404, detail="Asset not found")
-        
-        #db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
-        transactions = TransactionsRepository.get_transactions_by_asset_id(db, asset.id)
-        total_quantity = sum(t.quantity for t in transactions)
-        total_cost = sum(t.quantity * t.purchase_price for t in transactions)
-        
-        # Aggiorna il prezzo live tramite il Service
-        service = get_stock_service()
-        stock_service = service.get_ticker_data(asset.symbol)
-        current_value = stock_service['current_value']
-        
-        market_value = total_quantity * current_value
-        profit_loss = market_value - total_cost
-        
-        return {
-            "symbol": asset.symbol,
-            "total_quantity": total_quantity,
-            "average_price": round(total_cost / total_quantity, 2) if total_quantity > 0 else 0,
-            "current_price": current_value,
-            "market_value": round(market_value, 2),
-            "profit_loss": round(profit_loss, 2),
-            "currency": asset.currency
-        }

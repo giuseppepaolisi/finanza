@@ -16,8 +16,7 @@ class StockYFinanceClient(StockClient):
             info = ticker.fast_info
             
             # Verifica che i dati siano validi
-            last_price = info.get('lastPrice')
-            print(info.keys())
+            last_price = info.get('lastPrice') or info.get('currentPrice')
             if last_price is None or last_price == 0:
                 return None
             
@@ -33,6 +32,6 @@ class StockYFinanceClient(StockClient):
             return None
 
 # Factory per selezionare il service
-def get_stock_service() -> StockClient:
+def get_stock_client() -> StockClient:
     """Factory per ottenere il servizio stock attivo"""
     return StockYFinanceClient
