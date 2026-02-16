@@ -2,33 +2,31 @@ from sqlalchemy.orm import Session
 from models.models import Asset, Transaction
 from clients.stock_client import get_stock_client
 from datetime import date
-from fastapi import HTTPException
 from repository.assets_repository import AssetsRepository
 from repository.transaction_repository import TransactionsRepository
+from core.logger import setup_logger
+from core.exceptions import PortfolioException
+
+logger = setup_logger(__name__)
 
 class PortfolioService:
     @staticmethod
-    def add_transaction(db: Session, asset_in: dict, trans_in: dict):
-        # Controlla se l'asset esiste già
-        db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
-                
+    def add_transaction(db: Session, asset_in: dict, trans_in: dict):   
         # Recupera dati live per il nuovo asset
         client = get_stock_client()
         market_data = client.get_ticker_data(asset_in['symbol'])
         # Check se esiste l'asset
-        if market_data is None or market_data.get('current_value') is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'."
+        if market_data is None:
+            logger.error(f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'.")
+            raise PortfolioException(
+                message=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'",
+                status_code=400
             )
-        
-        if not db_asset:
             
-            if market_data is None or market_data.get('current_value') is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Impossibile recuperare dati per il simbolo '{asset_in['symbol']}'. Verifica che sia corretto (es. AAPL, MSFT, GOOGL)."
-                )
+        # Controlla se l'asset esiste già
+        db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
+        if not db_asset:
+            logger.info(f"Creazione nuovo asset per simbolo '{asset_in['symbol']}'")
             
             db_asset = Asset(
                 symbol=asset_in['symbol'].upper(),
@@ -47,6 +45,7 @@ class PortfolioService:
             purchase_price=market_data['current_value'], # Usa il prezzo attuale come prezzo di acquisto
             purchase_date=market_data['update_date'] # Usa la data dell'ultimo aggiornamento come data di acquisto
         )
+        logger.info(f"Aggiunta transazione: {new_trans.quantity} unità di '{db_asset.symbol}' a {round(new_trans.purchase_price, 2)} {db_asset.currency} ciascuna.")
         TransactionsRepository.create_transaction(db, new_trans)
         return db_asset
 
@@ -143,6 +142,11 @@ class PortfolioService:
         # db.query(Asset).filter(Asset.symbol == symbol.upper()).first()
         asset = AssetsRepository.get_asset_by_symbol(db, symbol)
         if not asset:
-            raise HTTPException(status_code=404, detail="Asset not found")
+            logger.warning(f"Asset con simbolo '{symbol}' non trovato.")    
+            raise PortfolioException(
+                message=f"Asset con simbolo '{symbol}' non trovato.",
+                status_code=404
+            )
         transactions = db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
+        logger.info(f"Recuperate {len(transactions)} transazioni per l'asset '{symbol}'")
         return transactions

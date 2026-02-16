@@ -10,7 +10,10 @@ const AddAsset = ({loadPortfolioData}) => {
     if (symbol && quantity > 0) {
         try {
             const data = await portfolioApi.add_asset(symbol, quantity);
-            console.log("Asset added:", data);
+            if(data.error) {
+                alert(data.error);
+                return;
+            }
             setSymbol("");
             setQuantity(1);
             loadPortfolioData();

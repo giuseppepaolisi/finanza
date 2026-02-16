@@ -1,0 +1,3 @@
+2026-02-16 15:33:12,168 - __main__ - INFO - Starting the API server...
+2026-02-16 15:33:52,948 - services.portfolio_service - INFO - Aggiunta transazione: 1.0 unità di 'TSLA' a 417.44000244140625 USD ciascuna.
+2026-02-16 15:35:03,692 - services.portfolio_service - ERROR - Impossibile recuperare dati per il simbolo 'test1'.
