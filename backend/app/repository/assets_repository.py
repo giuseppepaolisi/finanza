@@ -13,18 +13,10 @@ class AssetsRepository:
     
     @staticmethod
     def add_asset(db: Session, asset_data: dict):
-        new_asset = Asset(
-            symbol=asset_data['symbol'].upper(),
-            name=asset_data['name'],
-            market=asset_data['market'],
-            currency=asset_data['currency'],
-            current_value=asset_data['current_value'],
-            update_date=asset_data['update_date']
-        )
-        db.add(new_asset)
+        db.add(asset_data)
         db.commit()
-        db.refresh(new_asset)
-        return new_asset
+        db.refresh(asset_data)
+        return asset_data
     
     @staticmethod
     def get_asset_by_id(db: Session, asset_id: int):

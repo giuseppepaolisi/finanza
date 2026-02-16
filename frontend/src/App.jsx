@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { portfolioApi } from './api/portfolioApi';
 import Summary from './components/Summary';
 import Assets from './components/Assets';
+import AddAsset from './components/AddAsset';
 
 function App() {
   // Stato per il valore totale del portafoglio
@@ -34,6 +35,9 @@ function App() {
   return (
     <>
       <Summary total={totalValue} currency={currency} isLoading={isLoading} />
+      <AddAsset onAddAsset={() => {
+        portfolioApi.get_assets().then(setAssets);
+      }} />
       <Assets assets={assets} onSort={(sort_by, order) => {
         portfolioApi.get_assets(sort_by, order).then(setAssets);
       }} currentSort={null} currentOrder={null} />
