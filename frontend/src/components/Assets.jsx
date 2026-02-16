@@ -24,6 +24,9 @@ const Assets = ({ assets}) => {
                 Valore Mercato
               </th>
               <th>
+                Prezzo Medio di Carico
+              </th>
+              <th>
                 Profit / Loss
               </th>
             </tr>
@@ -38,6 +41,7 @@ const Assets = ({ assets}) => {
                 <td className="value-cell">
                     {asset.market_value} {asset.currency}
                 </td>
+                <td>{asset.average_price}</td>
                 <td className="profit-loss-cell">
                     {asset.profit_loss === 0 ? (
                         <span>-</span>

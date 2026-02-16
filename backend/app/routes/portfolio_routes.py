@@ -27,11 +27,6 @@ def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
 def view_portfolio(sort_by: str, sort_order: str, db: Session = Depends(get_db)):
     return PortfolioService.get_portfolio_status(db, sort_by=sort_by, sort_order=sort_order)
 
-# Ritorna il prezzo medio di carico di ogni asset
-@router.get("/means_price")
-def get_average_prices(db: Session = Depends(get_db)):
-    return PortfolioService.get_average_price(db)
-
 # Ritorna tutte le transazioni per un dato asset
 @router.get("/transaction/{symbol}")
 def get_transactions_by_symbol(symbol: str, db: Session = Depends(get_db)):

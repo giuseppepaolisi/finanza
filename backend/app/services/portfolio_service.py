@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models.models import Asset, Transaction
-from backend.app.clients.stock_client import get_stock_client
+from clients.stock_client import get_stock_client
 from datetime import date
 from fastapi import HTTPException
 from repository.assets_repository import AssetsRepository
@@ -75,6 +75,9 @@ class PortfolioService:
             # Profit and Loss
             total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
             profit_loss = market_value - total_cost
+            
+            # calcolo prezzo medio di carico
+            average_price = total_cost / total_quantity if total_quantity > 0 else 0
 
             # Costruiamo un dizionario di risposta arricchito
             portfolio_summary.append({
@@ -86,6 +89,7 @@ class PortfolioService:
                 "currency": asset.currency,
                 "last_update": asset.update_date,
                 "profit_loss": round(profit_loss, 2),
+                "average_price": round(average_price, 2),
                 "purchase_date": min(t.purchase_date for t in asset.transactions) if asset.transactions else None # la prima data di acquisto tra le transazioni per questo asset
             })
             
@@ -135,21 +139,6 @@ class PortfolioService:
             total_value += market_value
         
         return {"total_value": round(total_value, 2), "currency": currency}
-        
-    
-    # Ritorna il prezzo medio di carico di ogni asset
-    @staticmethod
-    def get_average_price(db: Session):
-        assets = AssetsRepository.get_assets_with_transactions(db)
-        average_prices = {}
-
-        for asset in assets:
-            total_quantity = sum(t.quantity for t in asset.transactions)
-            total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
-            average_price = total_cost / total_quantity if total_quantity > 0 else 0
-            average_prices[asset.symbol] = round(average_price, 2)
-
-        return average_prices
     
     @staticmethod
     def get_transactions_by_symbol(db: Session, symbol: str):
