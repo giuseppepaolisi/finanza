@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from core.exceptions import PortfolioException
 from routes.portfolio_routes import router as portfolio_router
-from backend.app.core.database import init_db
+from core.database import init_db
 from core.logger import setup_logger
 
 logger = setup_logger(__name__)

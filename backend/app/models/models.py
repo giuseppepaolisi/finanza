@@ -2,7 +2,7 @@ from typing import List
 from datetime import date
 from sqlalchemy import String, Float, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from core.database import Base
 
 class Asset(Base):
     __tablename__ = "assets"
