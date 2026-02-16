@@ -71,6 +71,10 @@ class PortfolioService:
             
             # Calcola il valore totale attuale dell'investimento
             market_value = float(total_quantity) * asset.current_value
+            
+            # Profit and Loss
+            total_cost = sum(t.quantity * t.purchase_price for t in asset.transactions)
+            profit_loss = market_value - total_cost
 
             # Costruiamo un dizionario di risposta arricchito
             portfolio_summary.append({
@@ -81,6 +85,7 @@ class PortfolioService:
                 "market_value": round(market_value, 2),
                 "currency": asset.currency,
                 "last_update": asset.update_date,
+                "profit_loss": round(profit_loss, 2),
                 "purchase_date": min(t.purchase_date for t in asset.transactions) if asset.transactions else None # la prima data di acquisto tra le transazioni per questo asset
             })
             
@@ -154,32 +159,3 @@ class PortfolioService:
             raise HTTPException(status_code=404, detail="Asset not found")
         transactions = db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
         return transactions
-    
-    @staticmethod
-    def profit_and_loss(db: Session, symbol: str):
-        asset = AssetsRepository.get_asset_by_symbol(db, symbol)
-        if not asset:
-            raise HTTPException(status_code=404, detail="Asset not found")
-        
-        #db.query(Transaction).filter(Transaction.asset_id == asset.id).all()
-        transactions = TransactionsRepository.get_transactions_by_asset_id(db, asset.id)
-        total_quantity = sum(t.quantity for t in transactions)
-        total_cost = sum(t.quantity * t.purchase_price for t in transactions)
-        
-        # Aggiorna il prezzo live tramite il Service
-        service = get_stock_service()
-        stock_service = service.get_ticker_data(asset.symbol)
-        current_value = stock_service['current_value']
-        
-        market_value = total_quantity * current_value
-        profit_loss = market_value - total_cost
-        
-        return {
-            "symbol": asset.symbol,
-            "total_quantity": total_quantity,
-            "average_price": round(total_cost / total_quantity, 2) if total_quantity > 0 else 0,
-            "current_price": current_value,
-            "market_value": round(market_value, 2),
-            "profit_loss": round(profit_loss, 2),
-            "currency": asset.currency
-        }

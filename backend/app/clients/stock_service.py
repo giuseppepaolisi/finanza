@@ -17,7 +17,6 @@ class StockYFinanceClient(StockClient):
             
             # Verifica che i dati siano validi
             last_price = info.get('lastPrice')
-            print(info.keys())
             if last_price is None or last_price == 0:
                 return None
             

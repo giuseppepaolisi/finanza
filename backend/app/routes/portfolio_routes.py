@@ -41,7 +41,3 @@ def get_transactions_by_symbol(symbol: str, db: Session = Depends(get_db)):
 @router.get("/value/{currency}")
 def get_total_portfolio_value(currency: str, db: Session = Depends(get_db)):
     return PortfolioService.get_total_portfolio_value(db, currency=currency)
-
-@router.get("/profit_loss/{symbol}")
-def get_profit_and_loss(symbol: str, db: Session = Depends(get_db)):
-    return PortfolioService.profit_and_loss(db, symbol)
