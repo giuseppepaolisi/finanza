@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models.models import Asset, Transaction
-from clients.stock_service import get_stock_service
+from clients.stock_service import get_stock_client
 from datetime import date
 from fastapi import HTTPException
 from repository.assets_repository import AssetsRepository
@@ -13,8 +13,8 @@ class PortfolioService:
         db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
                 
         # Recupera dati live per il nuovo asset
-        service = get_stock_service()
-        market_data = service.get_ticker_data(asset_in['symbol'])
+        client = get_stock_client()
+        market_data = client.get_ticker_data(asset_in['symbol'])
         # Check se esiste l'asset
         if market_data is None or market_data.get('current_value') is None:
             raise HTTPException(
@@ -60,8 +60,8 @@ class PortfolioService:
 
         for asset in assets:
             # Aggiorna il prezzo live tramite il Service
-            service = get_stock_service()
-            stock_service = service.get_ticker_data(asset.symbol)
+            client = get_stock_client()
+            stock_service = client.get_ticker_data(asset.symbol)
             asset.current_value = stock_service['current_value']
             asset.update_date = stock_service['update_date']
             
@@ -116,8 +116,8 @@ class PortfolioService:
 
         for asset in assets:
             # Aggiorna il prezzo live tramite il Service
-            service = get_stock_service()
-            stock_service = service.get_ticker_data(asset.symbol)
+            client = get_stock_client()
+            stock_service = client.get_ticker_data(asset.symbol)
             asset.current_value = stock_service['current_value']
             asset.update_date = stock_service['update_date']
             
@@ -129,7 +129,7 @@ class PortfolioService:
             
             # Converti in USD se necessario
             if asset.currency != currency:
-                exchange_rate = service.get_exchange_rate(asset.currency, currency)
+                exchange_rate = client.get_exchange_rate(asset.currency, currency)
                 market_value *= exchange_rate
             
             total_value += market_value

@@ -32,6 +32,6 @@ class StockYFinanceClient(StockClient):
             return None
 
 # Factory per selezionare il service
-def get_stock_service() -> StockClient:
+def get_stock_client() -> StockClient:
     """Factory per ottenere il servizio stock attivo"""
     return StockYFinanceClient
