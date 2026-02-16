@@ -1,5 +1,7 @@
-// src/components/AssetList.jsx
 import React from 'react';
+import MoveUpRight from 'lucide-react/dist/esm/icons/move-up-right.js';
+import MoveDownLeft from 'lucide-react/dist/esm/icons/move-down-left.js';
+import Minus from 'lucide-react/dist/esm/icons/minus.js';
 
 const Assets = ({ assets}) => {
 
@@ -41,14 +43,14 @@ const Assets = ({ assets}) => {
                 <td className="value-cell">
                     {asset.market_value} {asset.currency}
                 </td>
-                <td>{asset.average_price}</td>
+                <td>{asset.average_price} {asset.currency}</td>
                 <td className="profit-loss-cell">
                     {asset.profit_loss === 0 ? (
-                        <span>-</span>
+                        <span><Minus className="w-4 h-4 inline mr-1" /></span>
                     ) : asset.profit_loss > 0 ? (
-                        <span className="profit">profit</span>
+                        <span className="profit"><MoveUpRight color="green" /></span>
                     ) : (
-                        <span className="loss">loss</span>
+                        <span className="loss"><MoveDownLeft color="red"/></span>
                     )}
                 </td>
               </tr>

@@ -19,7 +19,6 @@ class InvestmentSchema(BaseModel):
 def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
     asset_data = {"symbol": data.symbol}
     trans_data = {"quantity": data.quantity}
-    print(f"asset {asset_data}, transaction {trans_data}")
     
     return PortfolioService.add_transaction(db, asset_data, trans_data)
 

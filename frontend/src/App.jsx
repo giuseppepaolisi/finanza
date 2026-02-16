@@ -12,8 +12,7 @@ function App() {
 
   const [assets, setAssets] = useState([]);
 
-  useEffect(() => {
-    const loadPortfolioData = async () => {
+  const loadPortfolioData = async () => {
       try {
         // Chiamata API per ottenere il valore totale del portafoglio
         const data = await portfolioApi.get_total_portfolio_value(currency);
@@ -29,15 +28,14 @@ function App() {
       }
     };
 
+  useEffect(() => {
     loadPortfolioData();
-  }, [currency]);
+  }, []);
 
   return (
     <>
       <Summary total={totalValue} currency={currency} isLoading={isLoading} />
-      <AddAsset onAddAsset={() => {
-        portfolioApi.get_assets().then(setAssets);
-      }} />
+      <AddAsset loadPortfolioData={loadPortfolioData} />
       <Assets assets={assets} onSort={(sort_by, order) => {
         portfolioApi.get_assets(sort_by, order).then(setAssets);
       }} currentSort={null} currentOrder={null} />

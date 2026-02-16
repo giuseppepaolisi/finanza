@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { portfolioApi } from "../api/portfolioApi";
 
-const AddAsset = () => {
+const AddAsset = ({loadPortfolioData}) => {
   const [symbol, setSymbol] = useState("");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -11,7 +11,9 @@ const AddAsset = () => {
         portfolioApi.add_asset(symbol, quantity)
             .then(() => {
                 setSymbol("");
-                setQuantity(0);
+                setQuantity(1);
+                loadPortfolioData();
+                                
             })
             .catch(error => {
                 console.error("Error adding asset:", error);
