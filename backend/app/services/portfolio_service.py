@@ -100,6 +100,8 @@ class PortfolioService:
             portfolio_summary.sort(key=lambda x: x['current_price'], reverse=(sort_order == "desc"))
         elif sort_by == "market_value":
             portfolio_summary.sort(key=lambda x: x['market_value'], reverse=(sort_order == "desc"))
+        elif sort_by == "total_quantity":
+            portfolio_summary.sort(key=lambda x: x['total_quantity'], reverse=(sort_order == "desc"))
             
         return {"assets": portfolio_summary}
     
