@@ -3,12 +3,14 @@ import MoveUpRight from 'lucide-react/dist/esm/icons/move-up-right.js';
 import MoveDownLeft from 'lucide-react/dist/esm/icons/move-down-left.js';
 import Minus from 'lucide-react/dist/esm/icons/minus.js';
 
-const Assets = ({ assets}) => {
+const Assets = ({ assets, isLoading }) => {
 
   return (
     <div className="asset-list-container">
       <h3>I tuoi Asset</h3>
-      {assets.length === 0 ? (
+      {isLoading ? (
+        <p>Caricamento asset...</p>
+      ) : assets.length === 0 ? (
         <p>Nessun asset presente nel portafoglio.</p>
       ) : (
         <table>
