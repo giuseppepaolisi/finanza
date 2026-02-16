@@ -16,7 +16,7 @@ class StockYFinanceClient(StockClient):
             info = ticker.fast_info
             
             # Verifica che i dati siano validi
-            last_price = info.get('lastPrice')
+            last_price = info.get('lastPrice') or info.get('currentPrice')
             if last_price is None or last_price == 0:
                 return None
             

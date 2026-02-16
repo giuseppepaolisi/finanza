@@ -47,9 +47,7 @@ class PortfolioService:
             purchase_price=market_data['current_value'], # Usa il prezzo attuale come prezzo di acquisto
             purchase_date=market_data['update_date'] # Usa la data dell'ultimo aggiornamento come data di acquisto
         )
-        db.add(new_trans)
-        db.commit()
-        db.refresh(db_asset)
+        TransactionsRepository.create_transaction(db, new_trans)
         return db_asset
 
     @staticmethod
