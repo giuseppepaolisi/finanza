@@ -23,6 +23,13 @@ class PortfolioService:
                 status_code=400
             )
             
+        if trans_in['quantity'] <= 0 or trans_in['price'] <= 0:
+            logger.error(f"Quantità o prezzo non validi: quantity={trans_in['quantity']}, price={trans_in['price']}")
+            raise PortfolioException(
+                message=f"Quantità o prezzo non validi: quantity={trans_in['quantity']}, price={trans_in['price']}",
+                status_code=400
+            )
+            
         # Controlla se l'asset esiste già
         db_asset = AssetsRepository.get_asset_by_symbol(db, asset_in['symbol'])
         if not db_asset:

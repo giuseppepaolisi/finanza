@@ -35,6 +35,7 @@ const AddAsset = ({ onAssetAdded }) => {
       <h3>Aggiungi Asset</h3>
       <form onSubmit={handleSubmit} className="add-asset-form">
         <div className="input-group">
+          <label htmlFor="symbol">Simbolo:</label>
           <input
             type="text"
             placeholder="Simbolo dell'asset"
@@ -44,6 +45,7 @@ const AddAsset = ({ onAssetAdded }) => {
           />
         </div>
         <div className="input-group">
+          <label htmlFor="quantity">Quantità:</label>
           <input
             type="number"
             placeholder="Quantità"
@@ -55,6 +57,7 @@ const AddAsset = ({ onAssetAdded }) => {
           />
         </div>
         <div className="input-group">
+          <label htmlFor="price">Prezzo:</label>
           <input
             type="number"
             placeholder="Prezzo"
