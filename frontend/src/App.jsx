@@ -53,7 +53,13 @@ function App() {
     <div className="app-container">
       <Summary total={totalValue} currency={currency} isLoading={isLoadingValue} />
       <div className="controls-row">
-        <AddAsset loadPortfolioAssets={loadPortfolioAssets} isLoading={isLoadingAssets} />
+        <AddAsset 
+          onAssetAdded={() => {
+            loadPortfolioAssets(sortBy);
+            loadPortfolioValue();
+          }} 
+          isLoading={isLoadingAssets} 
+        />
         <div className="sort-box">
           <label>Ordina per: </label>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>

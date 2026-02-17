@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { portfolioApi } from "../api/portfolioApi";
 
-const AddAsset = ({loadPortfolioData}) => {
+const AddAsset = ({ onAssetAdded }) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -16,7 +16,9 @@ const AddAsset = ({loadPortfolioData}) => {
             }
             setSymbol("");
             setQuantity(1);
-            loadPortfolioData();
+            if (onAssetAdded) {
+              onAssetAdded();
+            }
         } catch (error) {
             console.error("Error adding asset:", error);
         }
