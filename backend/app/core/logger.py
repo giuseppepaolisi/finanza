@@ -1,11 +1,16 @@
 import logging
 import sys
 from logging import handlers
+from pathlib import Path
 
 def setup_logger(name: str = "finanza"):
     logger = logging.getLogger(name)
+    # Controlla che se il file log/finanza.log esiste
+    file = Path("logs/finanza.log")
+    if not file.exists():
+        file.parent.mkdir(parents=True, exist_ok=True)
     
-    # Evitiamo di aggiungere handler multipli se la funzione viene richiamata
+    # Evitia di aggiungere handler multipli se la funzione viene richiamata
     if not logger.handlers:
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
