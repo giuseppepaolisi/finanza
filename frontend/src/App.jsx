@@ -4,6 +4,7 @@ import Summary from './components/Summary';
 import Assets from './components/Assets';
 import AddAsset from './components/AddAsset';
 import './App.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 function App() {
   // Stato per il valore totale del portafoglio
@@ -22,6 +23,7 @@ function App() {
       const data = await portfolioApi.get_total_portfolio_value(currency);
       setTotalValue(data.total_value);
     } catch (error) {
+      toast.error('Non è possibile visualizzare il Totale');
       console.error('Error fetching total portfolio value:', error);
     } finally {
       setIsLoadingValue(false);
@@ -35,6 +37,7 @@ function App() {
         const assetsData = await portfolioApi.get_assets(sort_by);
         setAssets(assetsData.assets);
       } catch (error) {
+        toast.error('Non è possibile visualizzare gli Asset');
         console.error('Error fetching total portfolio value:', error);
       } finally {
         setIsLoadingAssets(false);
@@ -51,6 +54,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <Toaster position="top-right" reverseOrder={false} />
       <Summary total={totalValue} currency={currency} isLoading={isLoadingValue} />
       <div className="controls-row">
         <AddAsset 

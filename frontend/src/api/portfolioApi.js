@@ -7,14 +7,14 @@ export const portfolioApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/value/${currency}`);
             if (!response.ok) {
-            throw new Error('Failed to fetch total portfolio value');
+            throw new Error(response.message || 'Failed to fetch total portfolio value');
             } else {
                 const data = await response.json();
                 return data;
             }
         } catch (error) {
-        console.error('Error fetching total portfolio value:', error);
-        throw error;
+            console.error('Error fetching total portfolio value:', error);
+            throw error;
         }
     },
 
@@ -23,7 +23,7 @@ export const portfolioApi = {
         try {
             const response = await fetch(`${API_BASE_URL}/assets/${sort_by}/${order}`);
             if (!response.ok) {
-            throw new Error('Fetch asset fallita');
+                throw new Error(response.message || 'Fetch asset fallita');
             }
             const data = await response.json();
             return data;
@@ -48,7 +48,7 @@ export const portfolioApi = {
                     }),
             });
             if (!response.ok) {
-                throw new Error('Failed to add asset');
+                throw new Error(response.message || 'Non è possibile aggiungere l\'asset');
             }
             const data = await response.json();
             return data;

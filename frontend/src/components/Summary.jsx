@@ -7,7 +7,7 @@ const Summary = ({total, currency, isLoading}) => {
             {isLoading ? (
                 <p>Loading...</p>
             ) : (
-                <p>Valore totale: {total} {currency}</p>
+                <p>Valore: {total} {currency}</p>
             )}
         </div>
     );
