@@ -5,18 +5,20 @@ import { toast } from "react-hot-toast";
 const AddAsset = ({ onAssetAdded }) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState(1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (symbol && quantity > 0) {
+    if (symbol && quantity > 0 && price > 0) {
         try {
-            const data = await portfolioApi.add_asset(symbol, quantity);
+            const data = await portfolioApi.add_asset(symbol, quantity, price);
             if(data.error) {
                 toast.error(data.message);
                 return;
             }
             setSymbol("");
             setQuantity(1);
+            setPrice(1);
             toast.success('Asset aggiunto!');
             if (onAssetAdded) {
               onAssetAdded();
@@ -46,9 +48,20 @@ const AddAsset = ({ onAssetAdded }) => {
             type="number"
             placeholder="Quantità"
             value={quantity}
-            onChange={(e) => setQuantity(parseFloat(e.target.value))}
+            onChange={(e) => setQuantity(parseInt(e.target.value))}
             min="1"
             step="1"
+            required
+          />
+        </div>
+        <div className="input-group">
+          <input
+            type="number"
+            placeholder="Prezzo"
+            value={price}
+            onChange={(e) => setPrice(parseFloat(e.target.value))}
+            min="1"
+            step="0.01"
             required
           />
         </div>

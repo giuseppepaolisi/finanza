@@ -12,13 +12,14 @@ router = APIRouter(prefix="/portfolio", tags=["Portfolio"])
 class InvestmentSchema(BaseModel):
     symbol: str
     quantity: float
+    price: float
 # Dependency per ottenere il database serve per ogni endpoint che ne ha bisogno
 
 # Permette di acquiistre un nuovo asset
 @router.post("/assets")
 def add_investment(data: InvestmentSchema, db: Session = Depends(get_db)):
     asset_data = {"symbol": data.symbol}
-    trans_data = {"quantity": data.quantity}
+    trans_data = {"quantity": data.quantity, "price": data.price}
     
     return PortfolioService.add_transaction(db, asset_data, trans_data)
 

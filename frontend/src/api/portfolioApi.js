@@ -34,7 +34,7 @@ export const portfolioApi = {
     },
 
     // Aggiungi un nuovo asset
-    add_asset: async (symbol, quantity) => {
+    add_asset: async (symbol, quantity, price) => {
         try {
             const response = await fetch(`${API_BASE_URL}/assets`, {
                 method: 'POST',
@@ -44,7 +44,8 @@ export const portfolioApi = {
                 body: JSON.stringify(
                     { 
                         symbol: symbol, 
-                        quantity: quantity
+                        quantity: quantity,
+                        price: price
                     }),
             });
             if (!response.ok) {

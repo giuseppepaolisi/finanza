@@ -42,7 +42,7 @@ class PortfolioService:
         new_trans = Transaction(
             asset_id=db_asset.id,
             quantity=trans_in['quantity'],
-            purchase_price=market_data['current_value'], # Usa il prezzo attuale come prezzo di acquisto
+            purchase_price=trans_in['price'], # Usa il prezzo fornito come prezzo di acquisto
             purchase_date=market_data['update_date'] # Usa la data dell'ultimo aggiornamento come data di acquisto
         )
         logger.info(f"Aggiunta transazione: {new_trans.quantity} unità di '{db_asset.symbol}' a {round(new_trans.purchase_price, 2)} {db_asset.currency} ciascuna.")
