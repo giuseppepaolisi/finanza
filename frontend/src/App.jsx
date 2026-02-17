@@ -63,9 +63,7 @@ function App() {
           </select>
         </div>
       </div>
-      <Assets assets={assets} onSort={(sort_by, order) => {
-        portfolioApi.get_assets(sort_by, order).then(setAssets);
-      }} currentSort={null} currentOrder={null} />
+      <Assets assets={assets} isLoading={isLoadingAssets}/>
     </div>
   )
 }

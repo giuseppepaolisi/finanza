@@ -17,7 +17,6 @@ const Assets = ({ assets, isLoading }) => {
           <thead>
             <tr>
               <th>Symbol</th>
-              <th>Nome</th>
               <th >
                 Quantità
               </th>
@@ -39,7 +38,6 @@ const Assets = ({ assets, isLoading }) => {
             {assets.map((asset) => (
               <tr key={asset.symbol}>
                 <td className="symbol-cell">{asset.symbol}</td>
-                <td>{asset.name}</td>
                 <td>{asset.total_quantity}</td>
                 <td>{asset.current_price} {asset.currency}</td>
                 <td className="value-cell">
