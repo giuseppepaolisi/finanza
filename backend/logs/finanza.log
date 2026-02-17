@@ -1,8 +1,0 @@
-2026-02-17 09:18:54,689 - __main__ - INFO - Starting the API server...
-2026-02-17 09:23:59,106 - services.portfolio_service - INFO - Aggiunta transazione: 1.0 unità di 'TEST' a 48.61 USD ciascuna.
-2026-02-17 09:24:13,177 - services.portfolio_service - INFO - Aggiunta transazione: 5.0 unità di 'TEST' a 48.61 USD ciascuna.
-2026-02-17 09:32:10,559 - services.portfolio_service - INFO - Aggiunta transazione: 1.0 unità di 'TEST' a 48.61 USD ciascuna.
-2026-02-17 09:37:22,339 - services.portfolio_service - INFO - Aggiunta transazione: 1.0 unità di 'GOOG' a 306.02 USD ciascuna.
-2026-02-17 09:50:08,076 - services.portfolio_service - INFO - Aggiunta transazione: 1.0 unità di 'TSLA' a 417.44 USD ciascuna.
-2026-02-17 09:56:13,116 - services.portfolio_service - ERROR - Impossibile recuperare dati per il simbolo 'gyyufvgyjhv'.
-2026-02-17 09:59:01,834 - services.portfolio_service - ERROR - Impossibile recuperare dati per il simbolo 'gyyufvgyjhv'.
