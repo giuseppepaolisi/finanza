@@ -74,7 +74,7 @@ This will start:
 
 4. Run the FastAPI server:
    ```bash
-   python -m app.app
+   python app/app.py
    ```
 
    The backend will be available at `http://localhost:8000`.
