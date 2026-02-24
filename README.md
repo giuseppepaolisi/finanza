@@ -52,8 +52,15 @@ This will start:
 2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
-   venv\Scripts\activate  # On Windows
-   # On macOS/Linux: source venv/bin/activate
+   ```
+   Activate virtual env
+   Windows
+   ```bash
+   venv\Scripts\activate
+   ```
+   MacOS/Linux
+   ```bash
+   source venv/bin/activate
    ```
 
 3. Install Python dependencies:
