@@ -20,9 +20,13 @@ A full-stack application for managing stock portfolios, built with FastAPI (back
 Create a `.env` file in the root directory of the project with the following variables:
 
 ```
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
+# Credenziali DB
+# docker inspect postgres_container | findstr "IPAddress"
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=portfolio_db
+DB_USER=admin_user
+DB_PASSWORD=password123
 ```
 
 These variables are used by Docker Compose to configure the PostgreSQL database.
