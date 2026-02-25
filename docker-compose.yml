@@ -33,10 +33,24 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    #ports:
+    #  - "8000:8000"
+    #volumes:
+    #  - ./backend:/app
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_container
+    restart: unless-stopped
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_started
+    #volumes:
+    #  - ./frontend:/app
+    
 
 volumes:
   postgres_data:

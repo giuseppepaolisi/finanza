@@ -1,5 +1,5 @@
 
-const API_BASE_URL = 'http://localhost:8000/portfolio';
+const API_BASE_URL = '/portfolio';
 
 export const portfolioApi = {
     // Valore totale del portafoglio
