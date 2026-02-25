@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { portfolioApi } from "../api/portfolioApi";
-import { toast } from "react-hot-toast";
 
-const AddAsset = ({ onAssetAdded }) => {
+const AddAsset = ({ onSave }) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(1);
@@ -10,23 +8,11 @@ const AddAsset = ({ onAssetAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (symbol && quantity > 0 && price > 0) {
-        try {
-            const data = await portfolioApi.add_asset(symbol, quantity, price);
-            if(data.error) {
-                toast.error(data.message);
-                return;
-            }
-            setSymbol("");
-            setQuantity(1);
-            setPrice(1);
-            toast.success('Asset aggiunto!');
-            if (onAssetAdded) {
-              onAssetAdded();
-            }
-        } catch (error) {
-            toast.error(error.message);
-            console.error("Error adding asset:", error);
-        }
+      onSave({ symbol, quantity, price });
+      setPrice(1);
+      setQuantity(1);
+      setSymbol("");
+
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { portfolioApi } from './api/portfolioApi';
 import Summary from './components/Summary';
 import Assets from './components/Assets';
@@ -43,6 +43,18 @@ function App() {
         setIsLoadingAssets(false);
       }
     };
+  
+  const handleAddAsset = async (newAsset) => {
+    try {
+      await portfolioApi.add_asset(newAsset);
+      toast.success('Asset aggiunto con successo!');
+      loadPortfolioAssets(sortBy);
+      loadPortfolioValue();
+    } catch (error) {
+      toast.error('Errore durante l\'aggiunta dell\'asset');
+      console.error('Error adding asset:', error);
+    }
+  };
 
   useEffect(() => {
     loadPortfolioValue();
@@ -58,11 +70,7 @@ function App() {
       <Summary total={totalValue} currency={currency} isLoading={isLoadingValue} />
       <div className="controls-row">
         <AddAsset 
-          onAssetAdded={() => {
-            loadPortfolioAssets(sortBy);
-            loadPortfolioValue();
-          }} 
-          isLoading={isLoadingAssets} 
+          onSave={handleAddAsset} 
         />
         <div className="sort-box">
           <label>Ordina per: </label>
