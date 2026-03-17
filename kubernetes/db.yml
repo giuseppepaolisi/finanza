@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi # Storage di 200MB
+---
+apiVersion: apps/v1
+kind: StatefulSet # Provare StatefulSet se si vuole garantire l'ordine di avvio e la persistenza dei dati
+metadata:
+  name: postgres-backend
+spec:
+  replicas: 1 # 1 con Deployment, 1 o più con StatefulSet
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: dbname
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+                      - name: postgres-data # Nome di riferimento interno
+                        mountPath: /var/lib/postgresql/data
+      volumes: # Bisogna collegare il volume al PVC nel template del pod
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres-backend
+  ports:
+    - protocol: TCP
+      port: 5432 # Service port
+      targetPort: 5432 # Container port
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-db # Nome della policy
+spec:
+  # Chi stiamo protegendo
+  podSelector:
+    matchLabels:
+      app: postgres # Questa policy si applica ai pod del DB
+  policyTypes:
+    - Ingress # Ingress significa "traffico in entrata"
+  #2Chi può entrare nei pod del DB e su quali porte
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend # Autorizza solo i pod con questa etichetta
+      ports:
+        - protocol: TCP
+          port: 5432

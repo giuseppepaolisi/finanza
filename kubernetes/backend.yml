@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: finanza-backend:latest
+          imagePullPolicy: Never # Usa l'immagine locale senza cercare nel registry
+          env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: password
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: dbname
+          - name: DB_HOST
+            value: postgres-service # Nome del servizio del database
+          - name: DB_PORT
+            value: "5432"
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend # Non backend-service perchè nel compose era solo backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8000 # Service port
+      targetPort: 8000 # Container port
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend # Questa policy si applica ai pod del Backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend # Autorizza solo i pod del Frontend
+      ports:
+        - protocol: TCP
+          port: 8000
